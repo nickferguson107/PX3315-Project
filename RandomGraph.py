@@ -13,7 +13,7 @@ class RandomGraph():
                 break
         return p+1
     
-    def adjacency_matrix(self, nodes, p):
+    def adjacency_matrix(self, nodes, p, print_status=False):
         for i in p:
             if i < nodes:
                 break
@@ -24,29 +24,28 @@ class RandomGraph():
         while(np.sum(p)>0):
             for i in range(len(p)):
                 #print('Current degree distribution: {}'.format(p))
-                if p[i] == 0:
-                    continue
-                print('Starting node: {}.'.format(i))
+                if p[i] == 0: continue
+                if print_status: print('Starting node: {}.'.format(i))
                 origin_node = nodes[i]
                 while(1):
                     connection_node = random.choice(nodes)
-                    print('Attempting to connect node {} to node {}...'.format(origin_node, connection_node))
+                    if print_status: print('Attempting to connect node {} to node {}...'.format(origin_node, connection_node))
                     if p[connection_node] == 0:
-                        print('Connection node invalid: node already full.')
+                        if print_status: print('Connection node invalid: node already full.')
                         continue
                     if connection_node != origin_node:
                         break
-                    print('Connection node invalid: can\'t connect node to itself.')
+                    if print_status: print('Connection node invalid: can\'t connect node to itself.')
                 node_pairs.append([origin_node, connection_node])    # Connect nodes, add to list of node pairs
                 am[origin_node, connection_node] += int(1)    # Add connection to adjaceny matrix
                 am[connection_node, origin_node] += int(1)
-                print('Connection {} to {} made successfully.'.format(origin_node, connection_node))
+                if print_status: print('Connection {} to {} made successfully.'.format(origin_node, connection_node))
                 #print(am)
                 p[i] = p[i]-1
                 p[connection_node] = p[connection_node]-1
                 #print('Updated degree distribution: {}'.format(p))
                 if np.sum(p) == 0:
-                    print('All nodes filled.')
+                    if print_status: print('All nodes filled.')
                     break
         np.savetxt("am.csv", am, fmt='%i', delimiter='\t')
         return am
