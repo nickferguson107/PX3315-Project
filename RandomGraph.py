@@ -14,8 +14,11 @@ class RandomGraph():
             if np.sum(p+1)%2 == 0:
                 break
         return p+1
+
+    def mean_degree(self, nodes, threshold):
+        z = threshold*(nodes-1)
+        return z
     
-<<<<<<< HEAD
     def randomgraph(self, nodes, threshold, save=False):
         dist = np.random.uniform(size=nodes**2)
         p = np.reshape(dist, (nodes, nodes))
@@ -23,7 +26,7 @@ class RandomGraph():
         start_time = time.perf_counter()
         for i in range(nodes):
             for j in range(nodes):
-                if p[i,j] < threshold and i!=j:
+                if p[i,j] < threshold/2 and i!=j:
                     am[i,j] = int(1)
                     am[j,i] = int(1)
         end_time = time.perf_counter()
@@ -51,10 +54,7 @@ class RandomGraph():
         average_degrees = all_distributions.mean(axis=0)
         return average_degrees
 
-    def predetermined(self, nodes, p):
-=======
-    def adjacency_matrix(self, nodes, p, print_status=False):
->>>>>>> dd5610d6a077212a0a776402669e321cfebebb56
+    def predetermined(self, nodes, p, print_status=False):
         for i in p:
             if i < nodes:
                 break
