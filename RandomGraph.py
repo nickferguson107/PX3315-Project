@@ -1,5 +1,7 @@
 import numpy as np
 import random
+import time
+import general
 
 class RandomGraph():
 
@@ -13,7 +15,42 @@ class RandomGraph():
                 break
         return p+1
     
-    def adjacency_matrix(self, nodes, p):
+    def randomgraph(self, nodes, threshold, save=False):
+        dist = np.random.uniform(size=nodes**2)
+        p = np.reshape(dist, (nodes, nodes))
+        am = np.zeros((nodes, nodes))
+        start_time = time.perf_counter()
+        for i in range(nodes):
+            for j in range(nodes):
+                if p[i,j] < threshold and i!=j:
+                    am[i,j] = int(1)
+                    am[j,i] = int(1)
+        end_time = time.perf_counter()
+        time_elapsed = end_time - start_time
+        print("Finished creating network. Time taken: {:.3g}s".format(time_elapsed))
+        if save:
+            np.savetxt("am.csv", am, fmt='%i', delimiter='\t')
+        return am, time_elapsed
+    
+    def many_graphs(self, number_of_iterations, nodes, threshold):
+        all_distributions = np.zeros((number_of_iterations, nodes))
+        average_degrees = np.zeros(nodes)
+        times = []
+        start_time = time.perf_counter()
+        for i in range(number_of_iterations):
+            print("Creating graph {}...".format(i+1))
+            am, singlegraphtime = self.randomgraph(nodes, threshold)
+            times.append(singlegraphtime)
+            degrees = general.get_distribution(am)
+            all_distributions[i] = degrees
+        end_time = time.perf_counter()
+        time_elapsed = end_time - start_time
+        avg_time = np.mean(times)
+        print("Finished iterations. Time taken: {:.3g}s, average time {:.3g}s".format(time_elapsed, avg_time))
+        average_degrees = all_distributions.mean(axis=0)
+        return average_degrees
+
+    def predetermined(self, nodes, p):
         for i in p:
             if i < nodes:
                 break
