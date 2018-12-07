@@ -51,7 +51,7 @@ class RandomGraph():
         time_elapsed = end_time - start_time
         avg_time = np.mean(times)
         print("Finished iterations. Time taken: {:.3g}s, average time {:.3g}s".format(time_elapsed, avg_time))
-        average_degrees = all_distributions.mean(axis=0)
+        average_degrees = np.sum(all_distributions, axis=0)
         return average_degrees
 
     def predetermined(self, nodes, p, print_status=False):
