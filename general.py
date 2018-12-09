@@ -17,8 +17,8 @@ def poisson_fit(k, lam):
     p = (lam**k/scipy.special.factorial(k))*np.exp(-lam)
     return p
 
-def binomial_fit(x, p, n, k):
-    p = ((np.math.factorial(n))/(np.math.factorial(k))*np.math.factorial(n-k))*(p**k)*((1-p)**(n-k))
+def binomial_fit(k, p, n):
+    p = ((scipy.special.factorial(n))/(scipy.special.factorial(k))*scipy.special.factorial(n-k))*(p**k)*((1-p)**(n-k))
     return p
 
 def plot_distribution(degrees):
