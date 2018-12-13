@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.special
+import scipy.stats
+from scipy.optimize import curve_fit, OptimizeWarning
+from inspect import signature
 
 def get_distribution(am):
     degrees = [np.sum(row) for row in am]
@@ -14,12 +17,19 @@ def edge_number(am):
         return int(m/2)
 
 def poisson_fit(k, lam):
+    np.seterr(over='ignore', divide='ignore')
     p = (lam**k/scipy.special.factorial(k))*np.exp(-lam)
     return p
 
 def binomial_fit(k, p, n):
-    p = ((scipy.special.factorial(n))/(scipy.special.factorial(k))*scipy.special.factorial(n-k))*(p**k)*((1-p)**(n-k))
+    np.seterr(over='ignore', divide='ignore')
+    p = scipy.stats.binom.pmf(k, n, p)
     return p
+
+def fit(f, x, y, guess=[]):
+    popt, _ = curve_fit(f, x, y, p0=guess)
+    fit = f(x, *popt)
+    return fit
 
 def plot_distribution(degrees):
     _, ax = plt.subplots(1, 1)
