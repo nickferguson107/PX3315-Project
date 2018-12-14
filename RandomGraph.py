@@ -12,34 +12,36 @@ class Node:
    def __repr__(self):
       return repr(self.index)
 
-def randomGraph(n,p):
-   vertices = [Node(i) for i in range(n)]
-   edges = [(i,j) for i in range(n) for j in range(i) if random.random() < p]
-
-   for (i,j) in edges:
+def random_network(n, p):
+    start = time.perf_counter()
+    vertices = [Node(i) for i in range(n)]
+    edges = [(i,j) for i in range(n) for j in range(i) if random.random() < p]
+    for (i,j) in edges:
       vertices[i].neighbours.append(vertices[j])
       vertices[j].neighbours.append(vertices[i])
-
-   return vertices
+    end = time.perf_counter()
+    elapsed = end - start
+    return vertices, elapsed
 
 def degree_distribution(vertices, hist=True):
     dist = [len(vertices[i].neighbours) for i in range(len(vertices))]
     if hist:
-        bins = np.np.linspace(0, len(vertices), len(vertices)+1)
+        bins = np.linspace(0, len(vertices), len(vertices)+1)
         hist, _ = np.histogram(dist, bins=bins)
-        return hist
+        plotx = np.linspace(0, len(vertices)-1, len(vertices))
+        return plotx, hist
     else:
         return dist
 
-def multiple_graphs(n, p, iterations):
+def multiple_networks(n, p, iterations):
     all_hists = np.zeros((iterations, n))
+    all_times = np.zeros(iterations)
     for i in range(iterations):
-        if i%10 == 0:
-            print("{:.3g} percent complete".format((i/iterations)*100))
-        vertices = randomGraph(n, p)
-        all_hists[i] = degree_distribution(vertices, hist=True)
+        vertices, all_times[i] = random_network(n, p)
+        all_hists[i], plotx = degree_distribution(vertices, hist=True)
     average_hist = np.mean(all_hists, axis=0)
-    return average_hist
+    average_time = np.mean(all_times)
+    return plotx, average_hist, average_time
 
 def dfsComponent(node, visited):
    for v in node.neighbours:
@@ -69,7 +71,7 @@ def sizeOfLargestComponent(vertices):
 
 
 def graphLargestComponentSize(n, theRange):
-   return [(p, sizeOfLargestComponent(randomGraph(n, p))) for p in theRange]
+   return [(p, sizeOfLargestComponent(random_network(n, p))) for p in theRange]
 
 
 def movingAverage(a, n=3):
@@ -104,21 +106,3 @@ def all_edges(vertices):
         for k in allneighbours[j]:
             alledges.append((j, k))
     return allneighbours, alledges
-
-def many_graphs(self, number_of_iterations, nodes, threshold):
-    hists = np.zeros((number_of_iterations, nodes))
-    times = []
-    start_time = time.perf_counter()
-    bins = np.np.linspace(0, nodes, nodes+1)
-    for i in range(number_of_iterations):
-        print("Creating network {}...".format(i+1))
-        am, singlegraphtime = self.randomgraph(nodes, threshold)
-        times.append(singlegraphtime)
-        degrees = general.get_distribution(am)
-        hists[i], _ = np.histogram(degrees, bins=bins)
-    end_time = time.perf_counter()
-    time_elapsed = end_time - start_time
-    avg_time = np.mean(times)
-    print("Finished iterations. Time taken: {:.3g}s, average time {:.3g}s".format(time_elapsed, avg_time))
-    average_hist = np.mean(hists, axis=0)
-    return average_hist
