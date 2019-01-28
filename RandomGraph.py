@@ -11,9 +11,6 @@ class Node:
         self.index = index
         self.neighbours = []
 
-    def __repr__(self):
-        return repr(self.index)
-
 def random_network(n, p):
     """
     Creates random network
@@ -179,8 +176,7 @@ def find_component(node, visited):
     for v in node.neighbours:
         if v not in visited:
             visited.add(v)
-            find_component(v, visited)
-
+            find_component(v, visited)        
 
 def get_all_components(vertices):
     """

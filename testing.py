@@ -2,7 +2,12 @@ import RandomGraph
 import general
 import numpy as np
 import matplotlib.pyplot as plt
+import networkx as nx
 
+network, _ = RandomGraph.random_network(100, 0.02)
+edges = RandomGraph.all_edges(network)
 
-network, _ = RandomGraph.random_network(1000, 0.005)
-components = RandomGraph.get_all_components(network)
+G = nx.Graph()
+G.add_edges_from(edges)
+nx.draw(G)
+plt.show()
