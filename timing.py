@@ -7,10 +7,10 @@ import networkx as nx
 plt.close("all")
 
 min_node = 50
-max_node = 1000
-node_step = 10
-iternum = 100
-p = 0.5
+max_node = 100
+node_step = 50
+iternum = 1
+p = 0.05
 
 nodes = np.arange(min_node, max_node, node_step, dtype=int)
 
@@ -35,7 +35,7 @@ ax.plot(nodes, times/nodes,
         linestyle='-',
         marker='x',
         label="Time")
-ax.ticklabel_format(style='sci', scilims=(-2,2))
+ax.ticklabel_format(style='sci')
 ax.legend(loc='best')
 ax.set_xlabel(r"Node number")
 ax.set_ylabel(r"Creation time ($s$)")

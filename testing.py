@@ -9,5 +9,5 @@ edges = RandomGraph.all_edges(network)
 
 G = nx.Graph()
 G.add_edges_from(edges)
-nx.draw(G)
+nx.draw(G, node_size=50)
 plt.show()
