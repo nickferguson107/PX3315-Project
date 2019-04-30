@@ -11,6 +11,9 @@ class Node:
         self.index = index
         self.neighbours = []
 
+    def __repr__(self):
+        return repr(self.index)
+
 def random_network(n, p):
     """
     Creates random network
@@ -29,15 +32,12 @@ def random_network(n, p):
     elapsed : float
         Time taken to create node in seconds
     """    
-    start = time.perf_counter()
     vertices = [Node(i) for i in range(n)]
     edges = [(i,j) for i in range(n) for j in range(i) if random.random() < p]
     for (i,j) in edges:
         vertices[i].neighbours.append(vertices[j])
         vertices[j].neighbours.append(vertices[i])
-    end = time.perf_counter()
-    elapsed = end - start
-    return vertices, elapsed
+    return vertices
 
 def time_creation(n_min, n_max, num, p, iternum):
     """
@@ -68,7 +68,7 @@ def time_creation(n_min, n_max, num, p, iternum):
     _, ax = plt.subplots(1, 1)
     times = []
     for n in nodes:
-        _, _, elapsed = multiple_networks(n, p, iternum)
+        _, elapsed = multiple_networks(n, p, iternum)
         times.append(elapsed)
     ax.plot(nodes, times, linestyle='-', label="Time")
     ax.legend(loc='best')
@@ -153,15 +153,13 @@ def multiple_networks(n, p, i):
         Average time taken for the creation of each network
     """    
     all_hists = np.zeros((i, n))
-    all_times = np.zeros(i)
     for j in range(i):
-        vertices, all_times[j] = random_network(n, p)
-        all_hists[j], plotx = degree_distribution(vertices, hist=True)
+        vertices = random_network(n, p)
+        plotx, all_hists[j] = degree_distribution(vertices, hist=True)
     average_hist = np.mean(all_hists, axis=0)
-    average_time = np.mean(all_times)
-    return plotx, average_hist, average_time
+    return plotx, average_hist
 
-def find_component(node, visited):
+def find_component(node, visited, pr=False):
     """
     Performs depth-first search to find the component of node.
 
@@ -174,11 +172,15 @@ def find_component(node, visited):
 
     """    
     for v in node.neighbours:
+        if pr: print("Found node {}...".format(v))
         if v not in visited:
+            if pr: print("Node {} added to component.".format(v))
             visited.add(v)
-            find_component(v, visited)        
+            find_component(v, visited, pr=True)
+        else:
+            if pr: print("Node {} already found.".format(v))
 
-def get_all_components(vertices):
+def get_all_components(vertices, pr=False):
     """
     Finds all the components in the network.
 
@@ -196,16 +198,19 @@ def get_all_components(vertices):
     all_visited = set()
 
     for v in vertices:
+        if pr: print("Exploring node {}...".format(v))
         if v not in all_visited:
             this_component = set([v])
-            find_component(v, this_component)
+            find_component(v, this_component, pr=pr)
             components.append(this_component)
+            if pr: print("Component fully explored: {}.".format(this_component))
             all_visited |= this_component
+        elif v in all_visited:
+            if pr: print("Component belonging to node {} already explored.".format(v))
 
     # Check all nodes have been visited
     assert sum(len(c) for c in components) == len(vertices)
     return components
-
 
 def largest_component_size(vertices):
     """
@@ -224,7 +229,6 @@ def largest_component_size(vertices):
 
     s = max(len(c) for c in get_all_components(vertices))
     return s
-
 
 def graph_largest_component_size(n, ps):
     """
@@ -246,7 +250,6 @@ def graph_largest_component_size(n, ps):
     l = [largest_component_size(random_network(n, p)) for p in ps]
     return l
 
-
 def moving_average(a, n=3):
     """
     Creates moving average for graph
@@ -266,8 +269,7 @@ def moving_average(a, n=3):
     avg = np.convolve(a, window, 'same')
     return avg
 
-
-def plot(nodes, filename, k_min=0.01, k_max=0.5, num=1000, avg_width=5):
+def plot(nodes, filename="auto", k_min=0.01, k_max=0.5, num=1000, avg_width=5):
     """
     Plots largest component size with a moving average for a range of k.
 
@@ -293,9 +295,12 @@ def plot(nodes, filename, k_min=0.01, k_max=0.5, num=1000, avg_width=5):
     y : ndarray
         Array of largest component sizes for k
     """    
-
+    if filename == "auto":
+        filename = "n={}, k=({},{})".format(nodes, k_min, k_max)
+    
     k = np.linspace(k_min, k_max, num=num)
-    sizes = graph_largest_component_size(nodes, k/nodes)
+    p = k/nodes
+    sizes = graph_largest_component_size(nodes, p)
 
     y = [s/nodes for s in sizes]
     avg = moving_average(y, avg_width)
@@ -312,8 +317,13 @@ def plot(nodes, filename, k_min=0.01, k_max=0.5, num=1000, avg_width=5):
     ax.grid()
     ax.legend(loc='best')
     plt.savefig("Graphs/{}.png".format(filename))
+    np.savetxt("Results/{}.txt".format(filename),
+                np.transpose(np.vstack((k, p, y, avg))),
+                delimiter='\t')
     return k, y
 
 if __name__ == '__main__':
     if not os.path.exists('Graphs'):
         os.makedirs('Graphs')
+    if not os.path.exists('Results'):
+        os.makedirs('Results')

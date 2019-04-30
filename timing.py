@@ -19,7 +19,7 @@ fig, ax = plt.subplots(1, 1)
 times = []
 
 for n in nodes:
-    _, _, elapsed = RandomGraph.multiple_networks(n, p, iternum)
+    _, elapsed = RandomGraph.multiple_networks(n, p, iternum)
     times.append(elapsed)
 
 '''
