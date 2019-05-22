@@ -176,7 +176,7 @@ def find_component(node, visited, pr=False):
         if v not in visited:
             if pr: print("Node {} added to component.".format(v))
             visited.add(v)
-            find_component(v, visited, pr=True)
+            find_component(v, visited, pr=pr)
         else:
             if pr: print("Node {} already found.".format(v))
 
@@ -269,7 +269,7 @@ def moving_average(a, n=3):
     avg = np.convolve(a, window, 'same')
     return avg
 
-def plot(nodes, filename="auto", k_min=0.01, k_max=0.5, num=1000, avg_width=5):
+def plot(nodes, filename="auto", k_min=0, k_max=7.5, k_iters=1500, save=False):
     """
     Plots largest component size with a moving average for a range of k.
 
@@ -280,9 +280,9 @@ def plot(nodes, filename="auto", k_min=0.01, k_max=0.5, num=1000, avg_width=5):
     filename : str
         Filename of saved image
     k_min : float
-        Start point of x range
+        Start point of k range
     k_max : float
-        End point of x range
+        End point of k range
     num : int
         Number of points to evaluate
     avg_width : int
@@ -298,17 +298,14 @@ def plot(nodes, filename="auto", k_min=0.01, k_max=0.5, num=1000, avg_width=5):
     if filename == "auto":
         filename = "n={}, k=({},{})".format(nodes, k_min, k_max)
     
-    k = np.linspace(k_min, k_max, num=num)
+    k = np.linspace(k_min, k_max, num=k_iters)
     p = k/nodes
     sizes = graph_largest_component_size(nodes, p)
 
     y = [s/nodes for s in sizes]
-    avg = moving_average(y, avg_width)
-    newk = np.linspace(k_min, k_max, num=len(avg))
     _, ax = plt.subplots()
 
     ax.plot(k, y, label="Component size")
-    ax.plot(newk, avg, label="Average", lw=2)
     ax.set(xlabel = r"$k$",
            ylabel = r"$\frac{N_{G}}{N}$",
            xlim = [k[0], k[-1]],
@@ -316,11 +313,29 @@ def plot(nodes, filename="auto", k_min=0.01, k_max=0.5, num=1000, avg_width=5):
     )  
     ax.grid()
     ax.legend(loc='best')
-    plt.savefig("Graphs/{}.png".format(filename))
-    np.savetxt("Results/{}.txt".format(filename),
-                np.transpose(np.vstack((k, p, y, avg))),
-                delimiter='\t')
-    return k, y
+    if save:
+        plt.savefig("Graphs/{}.png".format(filename))
+        np.savetxt("Results/{}.txt".format(filename),
+                    np.transpose(np.vstack((k, p, y))),
+                    delimiter='\t')
+    return k, p, y
+
+def multiplot(num, nodes, k_min, k_max):
+
+    all_arrays = np.empty((nodes, num))
+    filename = "n={}, k=({},{}), {} averaged".format(nodes, k_min, k_max, num)
+
+    for i in range(num):
+        print("Beginning iteration {}...".format(i))
+        _, _, all_arrays[:,i] = plot(nodes, k_min = k_min, k_max = k_max, k_iters=nodes)
+        print("Finished iteration {}.".format(i))
+
+    averaged = np.mean(all_arrays, axis=1)
+
+    np.savetxt("Results/{}.txt".format(filename), averaged, delimiter='\t')
+
+    return averaged
+
 
 if __name__ == '__main__':
     if not os.path.exists('Graphs'):
